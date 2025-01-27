@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <title>Empresas • Pesquisa</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    #user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .user-name, .user-company {
+      color: var(--text-color);
+      font-size: 16px;
+      font-weight: 500;
+      margin: 0;
+      padding: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: inline-block;
+      min-width: 50px;
+    }
+
+    .user-name {
+      max-width: 200px;
+      background-color: transparent;
+      z-index: 1;
+    }
+
+    .logout-container {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+    }
+
+    .logout-btn {
+      padding: 12px;
+      width: 50px;
+      height: 50px;
+      background-color: #dc3545;
+      color: white !important;
+      border: none;
+      border-radius: 50%;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .logout-btn:hover {
+      background-color: #c82333;
+      transform: scale(1.1);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .logout-btn i {
+      font-size: 24px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .user-name, .user-company {
+        color: #fff;
+      }
+    }
+
+    /* Variáveis de tema */
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #333333;
+      --input-bg: #ffffff;
+      --input-border: #ddd;
+      --input-focus-border: #007bff;
+      --icon-color: #666;
+      --icon-hover: #007bff;
+      --scrollbar-bg: #f1f1f1;
+      --scrollbar-thumb: #c1c1c1;
+      --scrollbar-thumb-hover: #a8a8a8;
+    }
+
+    /* Estilos do paginador */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 20px 0;
+    }
+
+    .pagination-btn {
+      background: none;
+      border: none;
+      padding: 4px;
+      cursor: pointer;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .page-input {
+      width: 3ch;
+      text-align: center;
+      border-radius: 4px;
+      padding: 0px;
+      color: var(--text-color);
+    }
+
+    .page-total {
+      margin-left:-5px;
+      color: var(--text-color);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1a1f35;
+      --text-color: #ffffff;
+      --input-bg: #2d2d2d;
+      --input-border: #404040;
+      --input-focus-border: #0056b3;
+      --icon-color: #888;
+      --icon-hover: #007bff;
+      --scrollbar-bg: #2d2d2d;
+      --scrollbar-thumb: #404040;
+      --scrollbar-thumb-hover: #4a4a4a;
+    }
+
+    /* Estilo da scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--scrollbar-bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-thumb-hover);
+    }
+
+    /* Firefox */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+    }
+
+    /* Estilos da busca */
+    .search-container {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .search-box {
+      position: relative;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 18px 70px 18px 25px;
+      border: 1px solid var(--input-border);
+      border-radius: 25px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-color);
+      opacity: 0.6;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--input-focus-border);
+      box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+
+    .search-button {
+      position: absolute;
+      right: 50px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: 12px;
+      cursor: pointer;
+      color: var(--icon-color);
+      transition: all 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.6;
+    }
+
+    .search-button:hover {
+      opacity: 1;
+    }
+    .search-button i {
+      font-size: 32px;
+    }
+
+    /* Remove o ícone de busca do início do input */
+    .search-box > i.fa-search {
+      display: none;
+    }
+
+    .user-name-display {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .user-name-display .name {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-color);
+    }
+    .user-name-display .group {
+      font-size: 14px;
+      color: var(--text-color);
+      opacity: 0.8;
+      text-align: right;
+    }
+    .logo {
+      width: 70px;
+      height: 70px;
+      margin-bottom: -20px;
+    }
+
+    /* Estilos do popup de confirmação */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: var(--container-bg);
+      padding: 25px;
+      border-radius: 12px;
+      background-color: #2d2d2dea;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-color);
+      text-align: center;
+    }
+
+    .modal-subtitle {
+      font-size: 14px;
+      color: var(--text-color);
+      opacity: 0.8;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-option {
+      padding: 15px;
+      border: 2px solid var(--input-border);
+      border-radius: 8px;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .modal-option:hover {
+      border-color: #007bff;
+      background-color: rgba(0, 123, 255, 0.1);
+    }
+
+    .modal-option small {
+      display: block;
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+
+    .company-info {
+      flex-grow: 1;
+    }
+
+    .bitrix-badge {
+      display: inline-block;
+      background-color: #dc3545;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .options-list {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      border: 1px solid #ccc;
+      background-color: var(--bg-secondary);
+      z-index: 1000;
+      max-height: 250px;
+      overflow-y: auto;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .options-list li {
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .options-list li:hover {
+      background-color: var(--scrollbar-thumb);
+    }
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    #search-type {
+      appearance: none; /* Remove a aparência padrão */
+      background-color: var(--bg-secondary); /* Cor de fundo */
+      border: none; /* Borda */
+      border-radius: 8px; /* Cantos arredondados */
+      padding: 8px 12px; /* Espaçamento interno */
+      font-size: 16px; /* Tamanho da fonte */
+      color: var(--text-color); /* Cor do texto */
+      cursor: pointer; /* Mostra o cursor de clique */
+      transition: all 0.3s ease; /* Transição para efeitos */
+    }
+
+    #search-type:hover {
+      border-color: #007bff; /* Cor da borda ao passar o mouse */
+    }
+
+    #search-type:focus {
+      outline: none; /* Remove o contorno padrão */
+      border-color: #0056b3; /* Cor da borda ao focar */
+      box-shadow: 0 0 4px #0056b3; /* Efeito de brilho */
+    }
+
+  </style>
+</head>
+<body>
+  <div class="loading-indicator">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <div id="notification" class="notification"></div>
+
+  <div class="container">
+    <header>
+
+      <h1 class="app-title"><img src="../static/favicon.png" alt="SetUp Tecnologia" class="logo">Setup Tecnologia</h1>
+
+      <div class="user-name-display">
+        <script>
+          fetch('/api/current-user')
+            .then(response => response.json())
+            .then(data => {
+              const container = document.querySelector('.user-name-display');
+              container.innerHTML = `
+                <div class="name">${data.name}</div>
+                ${data.group ? `<div class="group">${data.group}</div>` : ''}
+              `;
+            })
+            .catch(error => console.error('Erro ao carregar dados do usuário:', error));
+        </script>
+      </div>
+    </header>
+
+    <main>
+      <div class="search-container">
+        <div class="search-box">
+          <select id="search-type">
+            <option id="buscaTermo">Termo</option>
+            <option id="buscaCnae">Cnae</option>
+          </select>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Buscar Termo..."
+            aria-label="Buscar empresas">
+          <button class="search-button" id="search-button" aria-label="Realizar busca">
+            <i class="fas fa-search"></i>
+          </button>
+
+          <ul class="options-list" id="options-list">
+            <!-- Options will be dynamically populated -->
+          </ul>
+        </div>
+
+        <script>
+          const searchInput = document.getElementById('search-input');
+          const optionsList = document.getElementById('options-list');
+          const searchType = document.getElementById('search-type');
+          let allCnaes = [];
+
+          // Function to fetch CNAE data from the API
+          async function fetchCnaes() {
+            try {
+              const response = await fetch('/api/cnaes');
+              if (!response.ok) {
+                throw new Error('Failed to fetch CNAEs');
+              }
+              const data = await response.json();
+              allCnaes = data;
+              populateOptions(data);
+            } catch (error) {
+              console.error('Error fetching CNAEs:', error);
+            }
+          }
+
+          // Populate the options list with fetched data
+          function populateOptions(cnaes) {
+            optionsList.innerHTML = '';
+            cnaes.forEach(cnae => {
+              const li = document.createElement('li');
+              li.textContent = `${cnae.cnae} - ${cnae.description}`;
+              li.dataset.cnaeId = cnae.cnaeId;
+              li.dataset.mccCode = cnae.mccCode;
+              li.dataset.cnaeNumber = cnae.cnae.replace(/[-/]/g, ''); // Clean CNAE number
+              optionsList.appendChild(li);
+            });
+          }
+
+          // Filter options based on input value
+          function filterOptions(query) {
+            const filtered = allCnaes.filter(cnae =>
+              cnae.description.toLowerCase().includes(query.toLowerCase()) ||
+              cnae.cnae.includes(query)
+            );
+            populateOptions(filtered);
+            optionsList.style.display = filtered.length > 0 ? 'block' : 'none';
+          }
+
+          // Show the options list only when input is focused and "Cnae" is selected
+          searchInput.addEventListener('focus', () => {
+            if (searchType.value === 'Cnae') {
+              optionsList.style.display = 'block';
+              if (allCnaes.length === 0) {
+                fetchCnaes();
+              }
+            }
+          });
+
+          // Filter options as the user types
+          searchInput.addEventListener('input', (event) => {
+            if (searchType.value === 'Cnae') {
+              const query = event.target.value;
+              filterOptions(query);
+            }
+          });
+
+          // Hide the options list when clicking outside
+          document.addEventListener('click', (event) => {
+            if (!event.target.closest('.search-box')) {
+              optionsList.style.display = 'none';
+            }
+          });
+
+          // Handle clicking on an option
+          optionsList.addEventListener('click', (event) => {
+            if (event.target.tagName === 'LI') {
+              searchInput.value = event.target.dataset.cnaeNumber; // Use cleaned CNAE number
+              optionsList.style.display = 'none';
+            }
+          });
+
+          // Hide the options list if the selection changes to "Termo" and update placeholder
+          searchType.addEventListener('change', () => {
+            if (searchType.value === 'Cnae') {
+              searchInput.placeholder = 'Buscar CNAE...';
+            } else {
+              searchInput.placeholder = 'Buscar Termo...';
+              optionsList.style.display = 'none';
+            }
+          });
+        </script>
+        <button class="filters-toggle" aria-label="Mostrar filtros">
+          <i class="fas fa-filter"></i>
+        </button>
+
+        <div class="filters" role="toolbar" aria-label="Filtros de localização">
+          <div class="filter-group">
+            <input type="text" class="location-filter" data-filter-type="city" placeholder="Cidade">
+          </div>
+          <div class="filter-group">
+            <input type="text" class="location-filter" data-filter-type="state" placeholder="Estado">
+          </div>
+          <div class="filter-group">
+            <input type="text" class="location-filter" data-filter-type="neighborhood" placeholder="Bairro">
+          </div>
+        </div>
+      </div>
+
+      <div class="companies-container" id="companies-list" role="list">
+        <!-- Companies will be loaded here dynamically -->
+      </div>
+
+      <nav class="pagination" id="pagination" aria-label="Navegação de páginas">
+        <button class="pagination-btn prev-btn" disabled aria-label="Página anterior">
+          <i class="fas fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <input type="text" class="page-input" value="1" aria-label="Número da página atual">
+        <span class="page-total">de 1</span>
+        <button class="pagination-btn next-btn" aria-label="Próxima página">
+          <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </nav>
+    </main>
+  </div>
+
+  <div class="theme-toggle">
+    <input type="checkbox" id="theme-switch" aria-label="Alternar tema escuro">
+    <label for="theme-switch" class="switch">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="logout-container">
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn" title="Sair do sistema">
+      <i class="fas fa-sign-out-alt"></i>
+    </a>
+  </div>
+
+  <div class="modal-overlay" id="qualificationModal">
+    <div class="modal-content">
+      <div class="modal-title">Selecione o tipo de Lead</div>
+      <div class="modal-subtitle"></div>
+      <div class="modal-options">
+        <button class="modal-option" data-type="ldr">
+          Lead não Qualificado (LDR)
+          <small>Pipeline inicial de prospecção</small>
+        </button>
+        <button class="modal-option" data-type="sdr">
+          Lead já Qualificado (SDR)
+          <small>Pipeline de oportunidades qualificadas</small>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Pegar o nome do usuário do atributo data
+      const userNameElement = document.getElementById('userName');
+      const userName = userNameElement ? userNameElement.getAttribute('data-user') : '';
+
+      console.log('[Debug] Elemento userName:', userNameElement);
+      console.log('[Debug] Nome do usuário do data-attribute:', userName);
+      console.log('[Debug] Conteúdo atual do elemento:', userNameElement ? userNameElement.textContent : 'elemento não encontrado');
+
+      if (userNameElement && userName) {
+        userNameElement.textContent = userName;
+        console.log('[Debug] Nome atualizado para:', userName);
+      }
+    })();
+  </script>
+
+  <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script type="module">
+    import { initTheme, toggleTheme } from "{{ url_for('static', filename='js/theme.js') }}";
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const themeSwitch = document.getElementById('theme-switch');
+      themeSwitch.checked = initTheme();
+
+      themeSwitch.addEventListener('change', (e) => {
+        toggleTheme(e.target.checked);
+      });
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const pageInput = document.querySelector('.page-input');
+
+      function adjustWidth() {
+        const length = pageInput.value.length;
+        pageInput.style.width = `${Math.max(1.5, length + 0.5)}ch`;
+      }
+
+      pageInput.addEventListener('input', adjustWidth);
+      adjustWidth(); // Ajusta o tamanho inicial
+    });
+  </script>
+
+  <script type="module">
+    import { showNotification } from "{{ url_for('static', filename='js/utils.js') }}";
+    import { formatCNPJ } from "{{ url_for('static', filename='js/utils.js') }}";
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('qualificationModal');
+      const modalOptions = modal.querySelectorAll('.modal-option');
+
+      // Função para mostrar o modal
+      window.showQualificationModal = function(companyData) {
+        modal.style.display = 'flex';
+
+        // Atualiza o subtítulo com o nome da empresa e CNPJ
+        const subtitle = modal.querySelector('.modal-subtitle');
+        subtitle.textContent = `${companyData.company_name} - ${formatCNPJ(companyData.cnpj)}`;
+
+        modalOptions.forEach(option => {
+          option.onclick = async () => {
+            const type = option.dataset.type;
+            let pipelineData = {};
+
+            try {
+              // Verificar o grupo do usuário e o tipo selecionado
+              const response = await fetch('/api/current-user');
+              const userData = await response.json();
+
+              if (userData.group === 'Acessórias') {
+                if (type === 'ldr') {
+                  pipelineData = {
+                    entityTypeId: 187,
+                    categoryId: 171,
+                    stageId: "DT187_171:NEW"
+                  };
+                } else if (type === 'sdr') {
+                  pipelineData = {
+                    entityTypeId: 187,
+                    categoryId: 145,
+                    stageId: "DT187_145:NEW",
+                    assignedById: 629
+                  };
+                }
+              } else if (userData.group === 'Sittax') {
+                if (type === 'ldr') {
+                  pipelineData = {
+                    entityTypeId: 158,
+                    categoryId: 169,
+                    stageId: "DT158_169:NEW",
+                    assignedById: 629
+                  };
+                } else if (type === 'sdr') {
+                  pipelineData = {
+                    entityTypeId: 158,
+                    categoryId: 159,
+                    stageId: "DT158_159:NEW",
+                    assignedById: 629
+                  };
+                }
+              } else if (userData.group === 'BestDoctors') {
+                if (type === 'ldr') {
+                  pipelineData = {
+                    entityTypeId: 180,
+                    categoryId: 167,
+                    stageId: "DT180_167:NEW",
+                    assignedById: 629
+                  };
+                } else if (type === 'sdr') {
+                  pipelineData = {
+                    entityTypeId: 180,
+                    categoryId: 149,
+                    stageId: "DT180_149:PREPARATION",
+                    assignedById: 629
+                  };
+                }
+              }
+
+              console.log('Tipo selecionado:', type);
+              console.log('Dados da pipeline:', pipelineData);
+
+              // Enviar para o Bitrix com os dados da pipeline
+              const bitrixResponse = await fetch(`/api/companies/${companyData.cnpj}/send-to-bitrix`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  ...companyData,
+                  ...pipelineData
+                })
+              });
+
+              if (!bitrixResponse.ok) {
+                const errorData = await bitrixResponse.json();
+                throw new Error(errorData.error || 'Erro ao enviar para o Bitrix');
+              }
+
+              showNotification('Lead enviado com sucesso!', 'success');
+            } catch (error) {
+              console.error('Erro:', error);
+              showNotification(error.message || 'Erro ao enviar lead', 'error');
+            }
+
+            modal.style.display = 'none';
+          };
+        });
+      };
+
+      // Fechar o modal se clicar fora
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
