@@ -176,7 +176,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         let typeQuery = 'termo'; // Valor padrão
 
         if (searchOption === 'Cnae') {
-          console.log('Busca por CNAE selecionada:', searchValue);
           typeQuery = 'cnae'; // Muda o tipo para 'cnae' quando necessário
         }
 
@@ -278,8 +277,6 @@ async function renderCompanies(companiesList) {
   try {
     // Primeiro, verifica todos os CNPJs de uma vez
     const cnpjs = companiesList.map(company => company.cnpj);
-    console.log('CNPJs a serem verificados:', cnpjs);
-    console.log('Grupo do usuário:', userData.group);
 
     const bitrixResponse = await fetch('/api/companies/check-bitrix', {
       method: 'POST',
@@ -297,15 +294,12 @@ async function renderCompanies(companiesList) {
     }
 
     const bitrixData = await bitrixResponse.json();
-    console.log('Resposta da verificação de CNPJs:', bitrixData);
 
     const existsMap = bitrixData.results;
-    console.log('Mapa de existência dos CNPJs:', existsMap);
 
     // Agora renderiza os cards com a informação de existência
     companiesList.forEach(company => {
       const existsInBitrix = existsMap[company.cnpj] || false;
-      console.log(`CNPJ ${company.cnpj} existe no Bitrix? ${existsInBitrix}`);
 
       const card = document.createElement('div');
       card.className = 'company-card';
@@ -389,8 +383,6 @@ async function renderCompanies(companiesList) {
       const bitrixBtn = card.querySelector('.bitrix-btn');
       bitrixBtn.addEventListener('click', async () => {
         try {
-          console.log('Capital Social original:', company.capitalSocial);
-
           // Tratar o valor do capital social
           let capitalSocial = company.capitalSocial || '0';
           // Remove R$ e espaços
@@ -414,7 +406,6 @@ async function renderCompanies(companiesList) {
             capitalSocial: capitalSocial,
             group: userData.group
           };
-          console.log('Dados enviados:', companyData);
 
           await sendToBitrix(companyData);
         } catch (error) {

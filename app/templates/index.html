@@ -594,13 +594,8 @@
       const userNameElement = document.getElementById('userName');
       const userName = userNameElement ? userNameElement.getAttribute('data-user') : '';
 
-      console.log('[Debug] Elemento userName:', userNameElement);
-      console.log('[Debug] Nome do usuário do data-attribute:', userName);
-      console.log('[Debug] Conteúdo atual do elemento:', userNameElement ? userNameElement.textContent : 'elemento não encontrado');
-
       if (userNameElement && userName) {
         userNameElement.textContent = userName;
-        console.log('[Debug] Nome atualizado para:', userName);
       }
     })();
   </script>
@@ -708,9 +703,6 @@
             }
           }
 
-          console.log('Tipo selecionado:', type);
-          console.log('Dados da pipeline:', pipelineData);
-
           // Enviar para o Bitrix com os dados da pipeline
           const bitrixResponse = await fetch(`/api/companies/${companyData.cnpj}/send-to-bitrix`, {
       method: 'POST',
@@ -759,7 +751,7 @@
     const bitrixBtn = targetCard.querySelector('.bitrix-btn');
       if (bitrixBtn) {
         bitrixBtn.disabled = true;
-        bitrixBtn.innerHTML = '<i class="fas fa-ban"></i> Já enviado';
+        bitrixBtn.innerHTML = '<i class="fas fa-ban"></i> Enviar para Bitrix';
         bitrixBtn.title = 'Esta empresa já foi enviada para o Bitrix';
       }
   }

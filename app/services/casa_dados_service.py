@@ -140,7 +140,6 @@ class CasaDadosService:
             query_value = [search_term]  # Quando for cnae, enviamos o código diretamente
         else:
             query_value = [search_term]  # Para o tipo 'termo', mantemos o valor do search_term
-        print(f"Tipo de busca: {type_query}")
 
         payload = {
             "query": {
@@ -179,7 +178,6 @@ class CasaDadosService:
         }
 
         # Log de o que está sendo enviado para a API
-        print(f"\n\nPayload enviado para a Casa dos Dados: {payload}\n\n")
 
         try:
             scraper = CasaDadosService.get_scraper()
@@ -193,7 +191,6 @@ class CasaDadosService:
             data = response.json()
 
             # Log de resposta da API
-            print(f"Resposta recebida da Casa dos Dados: {data}")
 
             companies = []
             for company in data.get('data', {}).get('cnpj', [])[:10]:  # Garante máximo de 10 resultados

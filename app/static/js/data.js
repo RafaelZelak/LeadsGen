@@ -39,8 +39,6 @@ export async function fetchCompanies(page = 1, searchTerm = '', filters = {}, ty
       neighborhood: filters.neighborhood || '',
       typeQuery // Adiciona o parâmetro typeQuery
     });
-    console.log(queryParams.toString());
-
     const response = await fetch(`/api/companies?${queryParams}`);
     if (!response.ok) {
       throw new Error('Failed to fetch companies');
