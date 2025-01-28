@@ -638,114 +638,148 @@
     import { formatCNPJ } from "{{ url_for('static', filename='js/utils.js') }}";
 
     document.addEventListener('DOMContentLoaded', () => {
-      const modal = document.getElementById('qualificationModal');
-      const modalOptions = modal.querySelectorAll('.modal-option');
+  const modal = document.getElementById('qualificationModal');
+  const modalOptions = modal.querySelectorAll('.modal-option');
 
-      // Função para mostrar o modal
-      window.showQualificationModal = function(companyData) {
-        modal.style.display = 'flex';
+  // Função para mostrar o modal
+  window.showQualificationModal = function(companyData) {
+    modal.style.display = 'flex';
 
-        // Atualiza o subtítulo com o nome da empresa e CNPJ
-        const subtitle = modal.querySelector('.modal-subtitle');
-        subtitle.textContent = `${companyData.company_name} - ${formatCNPJ(companyData.cnpj)}`;
+    // Atualiza o subtítulo com o nome da empresa e CNPJ
+    const subtitle = modal.querySelector('.modal-subtitle');
+    subtitle.textContent = `${companyData.company_name} - ${formatCNPJ(companyData.cnpj)}`;
 
-        modalOptions.forEach(option => {
-          option.onclick = async () => {
-            const type = option.dataset.type;
-            let pipelineData = {};
+    modalOptions.forEach(option => {
+      option.onclick = async () => {
+        const type = option.dataset.type;
+        let pipelineData = {};
 
-            try {
-              // Verificar o grupo do usuário e o tipo selecionado
-              const response = await fetch('/api/current-user');
-              const userData = await response.json();
+        try {
+          // Verificar o grupo do usuário e o tipo selecionado
+          const response = await fetch('/api/current-user');
+          const userData = await response.json();
 
-              if (userData.group === 'Acessórias') {
-                if (type === 'ldr') {
-                  pipelineData = {
-                    entityTypeId: 187,
-                    categoryId: 171,
-                    stageId: "DT187_171:NEW"
-                  };
-                } else if (type === 'sdr') {
-                  pipelineData = {
-                    entityTypeId: 187,
-                    categoryId: 145,
-                    stageId: "DT187_145:NEW",
-                    assignedById: 629
-                  };
-                }
-              } else if (userData.group === 'Sittax') {
-                if (type === 'ldr') {
-                  pipelineData = {
-                    entityTypeId: 158,
-                    categoryId: 169,
-                    stageId: "DT158_169:NEW",
-                    assignedById: 629
-                  };
-                } else if (type === 'sdr') {
-                  pipelineData = {
-                    entityTypeId: 158,
-                    categoryId: 159,
-                    stageId: "DT158_159:NEW",
-                    assignedById: 629
-                  };
-                }
-              } else if (userData.group === 'BestDoctors') {
-                if (type === 'ldr') {
-                  pipelineData = {
-                    entityTypeId: 180,
-                    categoryId: 167,
-                    stageId: "DT180_167:NEW",
-                    assignedById: 629
-                  };
-                } else if (type === 'sdr') {
-                  pipelineData = {
-                    entityTypeId: 180,
-                    categoryId: 149,
-                    stageId: "DT180_149:PREPARATION",
-                    assignedById: 629
-                  };
-                }
-              }
-
-              console.log('Tipo selecionado:', type);
-              console.log('Dados da pipeline:', pipelineData);
-
-              // Enviar para o Bitrix com os dados da pipeline
-              const bitrixResponse = await fetch(`/api/companies/${companyData.cnpj}/send-to-bitrix`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  ...companyData,
-                  ...pipelineData
-                })
-              });
-
-              if (!bitrixResponse.ok) {
-                const errorData = await bitrixResponse.json();
-                throw new Error(errorData.error || 'Erro ao enviar para o Bitrix');
-              }
-
-              showNotification('Lead enviado com sucesso!', 'success');
-            } catch (error) {
-              console.error('Erro:', error);
-              showNotification(error.message || 'Erro ao enviar lead', 'error');
+          if (userData.group === 'Acessórias') {
+            if (type === 'ldr') {
+              pipelineData = {
+                entityTypeId: 187,
+                categoryId: 171,
+                stageId: "DT187_171:NEW"
+              };
+            } else if (type === 'sdr') {
+              pipelineData = {
+                entityTypeId: 187,
+                categoryId: 145,
+                stageId: "DT187_145:NEW",
+                assignedById: 629
+              };
             }
+          } else if (userData.group === 'Sittax') {
+            if (type === 'ldr') {
+              pipelineData = {
+                entityTypeId: 158,
+                categoryId: 169,
+                stageId: "DT158_169:NEW",
+                assignedById: 629
+              };
+            } else if (type === 'sdr') {
+              pipelineData = {
+                entityTypeId: 158,
+                categoryId: 159,
+                stageId: "DT158_159:NEW",
+                assignedById: 629
+              };
+            }
+          } else if (userData.group === 'BestDoctors') {
+            if (type === 'ldr') {
+              pipelineData = {
+                entityTypeId: 180,
+                categoryId: 167,
+                stageId: "DT180_167:NEW",
+                assignedById: 629
+              };
+            } else if (type === 'sdr') {
+              pipelineData = {
+                entityTypeId: 180,
+                categoryId: 149,
+                stageId: "DT180_149:PREPARATION",
+                assignedById: 629
+              };
+            }
+          }
 
-            modal.style.display = 'none';
-          };
-        });
-      };
+          console.log('Tipo selecionado:', type);
+          console.log('Dados da pipeline:', pipelineData);
 
-      // Fechar o modal se clicar fora
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.style.display = 'none';
-        }
-      });
+          // Enviar para o Bitrix com os dados da pipeline
+          const bitrixResponse = await fetch(`/api/companies/${companyData.cnpj}/send-to-bitrix`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...companyData,
+        ...pipelineData
+      })
     });
+
+    if (!bitrixResponse.ok) {
+      const errorData = await bitrixResponse.json();
+      throw new Error(errorData.error || 'Erro ao enviar para o Bitrix');
+    }
+
+    showNotification('Lead enviado com sucesso!', 'success');
+
+    // Atualizar a badge no card correspondente
+    const cards = document.querySelectorAll('#companies-list .company-card');
+    let targetCard = null;
+
+    // Procurar o card com o CNPJ correspondente
+    cards.forEach(card => {
+    const cnpjElement = card.querySelector('.company-cnpj');
+    if (cnpjElement && cnpjElement.textContent.trim() === formatCNPJ(companyData.cnpj)) {
+      targetCard = card;
+    }
+  });
+
+  if (targetCard) {
+    // Adiciona ou atualiza a badge com o tipo selecionado
+    let badgeElement = targetCard.querySelector('.bitrix-badge');
+    if (!badgeElement) {
+      badgeElement = document.createElement('div');
+      badgeElement.className = 'bitrix-badge';
+      targetCard.querySelector('.company-header').appendChild(badgeElement);
+    }
+      badgeElement.innerHTML = `<i class="fas fa-check-circle"></i> ${type.toUpperCase()} enviado`;
+      badgeElement.classList.add('badge-updated'); // Classe para estilos adicionais, se necessário
+      badgeElement.innerHTML = `<i class="fas fa-check-circle"></i> ${type.toUpperCase()} enviado`;
+      badgeElement.classList.add('badge-updated'); // Classe para estilos adicionais, se necessário
+
+    // Desabilitar o botão de "Enviar para Bitrix"
+    const bitrixBtn = targetCard.querySelector('.bitrix-btn');
+      if (bitrixBtn) {
+        bitrixBtn.disabled = true;
+        bitrixBtn.innerHTML = '<i class="fas fa-ban"></i> Já enviado';
+        bitrixBtn.title = 'Esta empresa já foi enviada para o Bitrix';
+      }
+  }
+  } catch (error) {
+    console.error('Erro:', error);
+    showNotification(error.message || 'Erro ao enviar lead', 'error');
+  }
+
+  modal.style.display = 'none';
+      };
+    });
+  };
+
+  // Fechar o modal se clicar fora
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+});
   </script>
 </body>
 </html>
