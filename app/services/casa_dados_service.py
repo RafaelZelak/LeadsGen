@@ -184,7 +184,7 @@ class CasaDadosService:
             response = scraper.post(
                 CasaDadosService.API_URL,
                 json=payload,
-                timeout=10
+                timeout=60
             )
 
             response.raise_for_status()
