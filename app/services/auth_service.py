@@ -91,7 +91,7 @@ class AuthService:
     @staticmethod
     def authenticate(username, password):
         try:
-            domain = "digitalup.intranet"
+            domain = config("AD_DOMAIN")
             server = Server(domain, get_info=ALL_ATTRIBUTES)
             user = f'{username}@{domain}'
 
@@ -103,14 +103,13 @@ class AuthService:
 
             conn.unbind()
 
-            # Credenciais de admin hardcoded (como no teste.py)
-            admin_user = "administrator"
-            admin_password = "&ajhsRlm88s!@SF"
+            # Credenciais de admin vindas do .env
+            admin_user = config("AD_ADMIN_USER")
+            admin_password = config("AD_ADMIN_PASSWORD")
             ad_server = f"ldap://{domain}"
+
             # Configuração do servidor LDAP com admin
             server = Server(ad_server, get_info=ALL)
-
-            # Autenticação admin no LDAP
             admin_user_full = f"{admin_user}@{domain}"
             admin_conn = Connection(server, user=admin_user_full, password=admin_password, auto_bind=True)
 
@@ -128,13 +127,8 @@ class AuthService:
 
             if success and admin_conn.entries:
                 user_entry = admin_conn.entries[0]
-                # Pegar nome do usuário
                 display_name = user_entry.displayName.value if hasattr(user_entry, 'displayName') else username
-
-                # Extrai os grupos do atributo 'memberOf'
                 groups = user_entry.memberOf.values if hasattr(user_entry, 'memberOf') else []
-
-                # Processa apenas os nomes comuns (CN) dos grupos
                 cn_groups = [group.split(",")[0].replace("CN=", "") for group in groups]
 
                 # Atualiza a sessão
