@@ -49,6 +49,7 @@ def get_companies():
             filters=filters,
             type_query=type_query  # Passando o tipo de busca
         )
+        print(f"\n\n\n{result}\n\n\n")
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500

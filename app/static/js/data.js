@@ -43,7 +43,7 @@ export async function fetchCompanies(page = 1, searchTerm = '', filters = {}, ty
     if (!response.ok) {
       throw new Error('Failed to fetch companies');
     }
-
+    console.log(response)
     return await response.json();
   } catch (error) {
     console.error('Error fetching companies:', error);

@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       } catch (error) {
         console.error('Error updating display:', error);
         // Show error to user
-        showNotification('Erro ao buscar empresas. Por favor, tente novamente.', 'error');
+        showNotification('Busca de dados congestionada! Espere alguns segundos e tente novamente', 'error');
       } finally {
         // Hide loading indicator
         document.querySelector('.loading-indicator').classList.remove('visible');
@@ -300,7 +300,6 @@ async function renderCompanies(companiesList) {
     // Agora renderiza os cards com a informação de existência
     companiesList.forEach(company => {
       const existsInBitrix = existsMap[company.cnpj] || false;
-
       const card = document.createElement('div');
       card.className = 'company-card';
       card.innerHTML = `
