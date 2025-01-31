@@ -5,7 +5,9 @@ import {
     loadSavedTheme,
     fetchLocationSuggestions,
     showNotification,
-    updateFilterIndicator
+    updateFilterIndicator,
+    formatCapitalSocial,
+    formatPhoneNumber
 } from './utils.js';
 
 // Add error handling for module loading
@@ -306,7 +308,7 @@ async function renderCompanies(companiesList) {
         <div class="company-header">
           <div class="company-info">
             <h3 class="company-name">${company.razaoSocial}</h3>
-            <p class="company-cnpj">${formatCNPJ(company.cnpj)}</p>
+            <p class="company-cnpj">${formatCNPJ(String(company.cnpj))}</p>
           </div>
           <div class="company-actions">
             <button class="action-btn expand-btn">
@@ -328,13 +330,13 @@ async function renderCompanies(companiesList) {
           ${company.telefone1 ? `
           <div class="detail-item">
             <span class="detail-label">Telefone Principal</span>
-            <span class="detail-value">${company.telefone1}</span>
+            <span class="detail-value">${formatPhoneNumber(String(company.telefone1))}</span>
           </div>
           ` : ''}
           ${company.telefone2 ? `
           <div class="detail-item">
             <span class="detail-label">Telefone Secundário</span>
-            <span class="detail-value">${company.telefone2}</span>
+            <span class="detail-value">${formatPhoneNumber(String(company.telefone2))}</span>
           </div>
           ` : ''}
           ${company.email ? `
@@ -346,7 +348,7 @@ async function renderCompanies(companiesList) {
           ${company.capitalSocial ? `
           <div class="detail-item">
             <span class="detail-label">Capital Social</span>
-            <span class="detail-value">${company.capitalSocial}</span>
+            <span class="detail-value">${formatCapitalSocial(String(company.capitalSocial))}</span>
           </div>
           ` : ''}
           ${company.socios && company.socios.length > 0 ? `

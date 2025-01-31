@@ -21,6 +21,50 @@ export function loadSavedTheme() {
   }
 }
 
+// Formata o capital social para o padrão brasileiro (R$X.XXX,XX)
+export function formatCapitalSocial(value) {
+  if (!value) return "R$ 0,00";
+
+  // Converte para número inteiro e garante que seja válido
+  let num = parseInt(value, 10);
+  if (isNaN(num)) return "R$ 0,00";
+
+  // Formata no padrão R$ X.XXX,00
+  return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+// Formata números de telefone para o padrão nacional
+export function formatPhoneNumber(phone) {
+  if (!phone) return "Não informado";
+
+  // Remove tudo que não for número
+  let digits = phone.replace(/\D/g, "");
+
+  // Verifica se tem código de país +55
+  if (digits.length === 13 && digits.startsWith("55")) {
+    digits = digits.slice(2); // Remove o "55"
+  }
+
+  // Remove o 0 inicial, se houver
+  if (digits.length > 2 && digits.startsWith("0")) {
+    digits = digits.slice(1);
+  }
+
+  // Formatação com DDD e traço
+  if (digits.length === 11) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  } else if (digits.length === 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  } else if (digits.length === 9) {
+    return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+  } else if (digits.length === 8) {
+    return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  }
+
+  // Se não for nenhum dos padrões esperados, retorna como está
+  return phone;
+}
+
 // CNPJ Formatter
 export function formatCNPJ(cnpj) {
   return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
